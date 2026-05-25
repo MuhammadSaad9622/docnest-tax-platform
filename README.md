@@ -184,6 +184,14 @@ DocNest provides a centralized web vault featuring **role-based security, client
 ![Excel Import Results](./screenshots/excel-import-results.png)
 *Drag-and-drop zone parsing files into HTML preview tables using SheetJS. Tabular response highlighting successfully imported clients and detailing validation failures for rows containing errors.*
 
+### ⚙️ 8. Settings & Configurations
+![Settings Page](./screenshots/settings-page.png)
+*Tabbed configuration panel allowing administrators to control client database forms visibility parameters, add location offices, manage document settings, and select security rules.*
+
+### 📈 9. System Analytics & Charts
+![Analytics Page](./screenshots/analytics-page.png)
+*Aggregated client analytics and verification trends rendering location-wise distributions and verification statistics.*
+
 ---
 
 ## 🔄 System Architecture & Data Flow
