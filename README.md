@@ -15,6 +15,8 @@
 [![Vite](https://img.shields.io/badge/Vite-5.2-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
+<br/>
+
 [![Material UI](https://img.shields.io/badge/Material_UI-5.15-007FFF?style=flat-square&logo=mui&logoColor=white)](https://mui.com/)
 [![Tesseract.js](https://img.shields.io/badge/Tesseract.js-OCR-FF6F00?style=flat-square)](https://github.com/naptha/tesseract.js)
 [![Framer Motion](https://img.shields.io/badge/Framer_Motion-Animations-0055FF?style=flat-square&logo=framer&logoColor=white)](https://www.framer.com/motion/)
@@ -147,47 +149,40 @@ DocNest provides a centralized web vault featuring **role-based security, client
 
 ## 📸 Interface Screenshots
 
-*Below are structural layout representations of the core app modules. Replacements can be linked in `./screenshots/` directory.*
+*Below are structural layout representations of the core app modules.*
 
 ### 🏠 1. Landing Portal & Hero
-| Landing View | Features |
-| :--- | :--- |
-| *Visual Mockup Placeholder: `./screenshots/landing-page.png`* | Modern dark-themed hero with interactive Framer Motion cards, CTA buttons, pricing cards, and a direct developer contact portal. |
+![Landing Page](./screenshots/landing-page.png)
+*Modern dark-themed hero with interactive Framer Motion cards, CTA buttons, pricing cards, and a direct developer contact portal.*
 
 ### 🔐 2. Authentication Interface
-| Login Layout | Registration Layout |
-| :--- | :--- |
-| *Visual Mockup Placeholder: `./screenshots/login-page.png`* | *Visual Mockup Placeholder: `./screenshots/register-page.png`* |
-| Split layout with brand illustration panel, JWT storage sequence, and protected route handlers. | Real-time password strength meter, client-side input validations, user role selection, and canvas confetti effects upon success. |
+![Login Page](./screenshots/login-page.png)
+![Register Page](./screenshots/register-page.png)
+*Split layout with brand illustration panel, JWT storage sequence, and protected route handlers. Real-time password strength meter, client-side input validations, user role selection, and canvas confetti effects upon success.*
 
 ### 📊 3. Executive Dashboard
-| Main Analytics Dashboard | Features |
-| :--- | :--- |
-| *Visual Mockup Placeholder: `./screenshots/dashboard.png`* | Aggregated metrics displaying statistics, dynamic Recharts data, quick action routes, and real-time recent activity timeline. |
+![Dashboard](./screenshots/dashboard.png)
+*Aggregated metrics displaying statistics, dynamic Recharts data, quick action routes, and real-time recent activity timeline.*
 
 ### 👥 4. Client Registry & Dynamic Creation
-| Paginated Client List | Dynamic Add Client Form |
-| :--- | :--- |
-| *Visual Mockup Placeholder: `./screenshots/client-list.png`* | *Visual Mockup Placeholder: `./screenshots/add-client.png`* |
-| Grid of clients with status indicators showing missing KYC documents, filtering by branch location, and inline search. | Renders dynamically based on database visibility configs, enforcing age brackets, name formatting, and phone validations. |
+![Client List](./screenshots/client-list.png)
+![Add Client](./screenshots/add-client.png)
+*Grid of clients with status indicators showing missing KYC documents, filtering by branch location, and inline search. Renders dynamically based on database visibility configs, enforcing age brackets, name formatting, and phone validations.*
 
 ### 📄 5. OCR Verification Engine & Preview
-| OCR Pipeline Modal | Document Preview Frame |
-| :--- | :--- |
-| *Visual Mockup Placeholder: `./screenshots/ocr-verification.png`* | *Visual Mockup Placeholder: `./screenshots/document-preview.png`* |
-| 4-step progress stepper: checking size → initializing web worker Tesseract.js → scanning document → returning pattern match. | Renders images natively and hosts PDFs securely inside sandboxed iframe components with quick download tools. |
+![OCR Verification](./screenshots/ocr-verification.png)
+![Document Preview](./screenshots/document-preview.png)
+*4-step progress stepper: checking size → initializing web worker Tesseract.js → scanning document → returning pattern match. Renders images natively and hosts PDFs securely inside sandboxed iframe components with quick download tools.*
 
 ### 🌳 6. Interactive Family Hierarchy
-| Dynamic Family Tree Diagram | List Details View |
-| :--- | :--- |
-| *Visual Mockup Placeholder: `./screenshots/family-tree.png`* | *Visual Mockup Placeholder: `./screenshots/family-list.png`* |
-| D3 tree showing relationships, styled nodes with initials, customizable templates, and zoom controls. | Expandable lists displaying family members, custom document vaults, verification logs, and status details. |
+![Family Tree](./screenshots/family-tree.png)
+![Family List](./screenshots/family-list.png)
+*D3 tree showing relationships, styled nodes with initials, customizable templates, and zoom controls. Expandable lists displaying family members, custom document vaults, verification logs, and status details.*
 
 ### 📥 7. Spreadsheet Bulk Onboarding
-| Template Download & Upload Frame | Import Result Log |
-| :--- | :--- |
-| *Visual Mockup Placeholder: `./screenshots/excel-import-form.png`* | *Visual Mockup Placeholder: `./screenshots/excel-import-results.png`* |
-| Drag-and-drop zone parsing files into HTML preview tables using SheetJS. | Tabular response highlighting successfully imported clients and detailing validation failures for rows containing errors. |
+![Excel Import Form](./screenshots/excel-import-form.png)
+![Excel Import Results](./screenshots/excel-import-results.png)
+*Drag-and-drop zone parsing files into HTML preview tables using SheetJS. Tabular response highlighting successfully imported clients and detailing validation failures for rows containing errors.*
 
 ---
 
@@ -820,13 +815,15 @@ The most challenging part was parsing multi-page PDF documents for OCR in the br
 
 ---
 
-## 👥 Author
+## 👥 Author & Social Connections
 
 <div align="center">
 
-| Profile Card | Professional Links |
+| Profile | Links & Badges |
 | :--- | :--- |
-| **Om Rajpure** <br/> *Full Stack Developer* | 💼 **LinkedIn**: [om-rajpure](https://linkedin.com/in/om-rajpure) <br/> 🐙 **GitHub**: [@Om-Rajpure](https://github.com/Om-Rajpure) <br/> ✉️ **Email**: [omrajpure@gmail.com](mailto:omrajpure@gmail.com) |
+| **Om Rajpure** <br/> *Full Stack Developer* <br/><br/> <img src="https://github.com/Om-Rajpure.png" width="120" style="border-radius:50%;" alt="Om Rajpure Profile"/> | [![Portfolio](https://img.shields.io/badge/Portfolio-conceptsin5.com-4F46E5?style=for-the-badge&logo=google-chrome&logoColor=white)](https://conceptsin5.com/) <br/><br/> [![GitHub](https://img.shields.io/badge/GitHub-Om--Rajpure-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Om-Rajpure) <br/><br/> [![LinkedIn](https://img.shields.io/badge/LinkedIn-Om--Rajpure-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/om-rajpure) <br/><br/> [![Instagram](https://img.shields.io/badge/Instagram-conceptsin5-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/conceptsin5) <br/><br/> [![YouTube](https://img.shields.io/badge/YouTube-conceptsin5-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@conceptsin5) |
+
+<br/>
 
 *Built with ❤️ in India 🇮🇳*
 
