@@ -228,15 +228,7 @@ Optimizing OCR scanning on PDFs in the browser. Tesseract.js doesn't parse PDFs 
 
 ---
 
-## 👥 Author & Social Connections
 
-<div align="center">
-
-| Profile | Links & Badges |
-| :--- | :--- |
-| **Om Rajpure** <br/> *Full Stack Developer* <br/><br/> <img src="https://github.com/Om-Rajpure.png" width="100" style="border-radius:50%;" alt="Om Rajpure Profile"/> | [![Portfolio](https://img.shields.io/badge/Portfolio-conceptsin5.com-4F46E5?style=for-the-badge&logo=google-chrome&logoColor=white)](https://conceptsin5.com/) <br/><br/> [![GitHub](https://img.shields.io/badge/GitHub-Om--Rajpure-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Om-Rajpure) <br/><br/> [![LinkedIn](https://img.shields.io/badge/LinkedIn-Om--Rajpure-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/om-rajpure) <br/><br/> [![Instagram](https://img.shields.io/badge/Instagram-conceptsin5-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/conceptsin5) <br/><br/> [![YouTube](https://img.shields.io/badge/YouTube-conceptsin5-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@conceptsin5) |
-
-</div>
 
 ---
 
