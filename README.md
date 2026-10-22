@@ -174,7 +174,7 @@ FLUSH PRIVILEGES;
 DB_URL=jdbc:mysql://localhost:3306/docnest?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
 DB_USERNAME=docnest_user
 DB_PASSWORD=your_database_password
-JWT_SECRET=your_jwt_signing_key_at_least_32_characters
+JWT_SECRET=generate_with_openssl_rand_hex_32
 JWT_EXPIRATION=86400000
 CORS_ORIGINS=http://localhost:5173
 UPLOAD_DIR=uploads
