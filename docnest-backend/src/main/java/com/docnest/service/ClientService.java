@@ -106,10 +106,12 @@ public class ClientService {
 
     public Page<ClientDTO> searchClients(String query, Long locationId, List<Long> officeIds, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        boolean scoped = officeIds != null && !officeIds.isEmpty();
         Page<Client> clients = clientRepository.searchClients(
-                (query == null || query.isBlank()) ? null : query,
-                locationId,
-                officeIds,
+                (query == null || query.isBlank()) ? "" : query.trim(),
+                locationId != null ? locationId : -1L,
+                scoped,
+                scoped ? officeIds : List.of(-1L),
                 pageable);
         return clients.map(this::toDTO);
     }

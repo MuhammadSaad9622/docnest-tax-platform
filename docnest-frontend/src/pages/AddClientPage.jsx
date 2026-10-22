@@ -70,7 +70,7 @@ export default function AddClientPage() {
     const fc = fieldConfig.find(f => f.fieldName === field)
     let err
     if (fc?.isRequired && (!val || !String(val).trim())) err = `${fc.label} is required`
-    else if (field === 'mobile' && val && !isValidMobile(val)) err = 'Must start with 6-9 and be 10 digits'
+    else if (field === 'mobile' && val && !isValidMobile(val)) err = 'Enter a valid 10-digit US phone number'
     else if (field === 'email' && val && !isValidEmail(val)) err = 'Enter a valid email address'
     else if (field === 'dob' && val) {
       const dCheck = isDobValid(val)
@@ -143,7 +143,7 @@ export default function AddClientPage() {
     } else if (fieldType === 'TEXTAREA') {
       input = <TextField fullWidth label={lbl} multiline rows={3} value={form[fieldName] || ''} onChange={set(fieldName)} onBlur={onBlur(fieldName)} error={touched[fieldName] && !!errors[fieldName]} helperText={touched[fieldName] && errors[fieldName]} />
     } else if (fieldName === 'mobile') {
-      input = <TextField fullWidth label={lbl} value={form.mobile || ''} onChange={(e) => { numbersOnly(e); set('mobile')(e) }} onBlur={onBlur('mobile')} error={touched.mobile && !!errors.mobile} helperText={touched.mobile ? (errors.mobile || (form.mobile && isValidMobile(form.mobile) ? '✓ Valid Indian mobile' : '')) : ''} inputProps={{ maxLength: 10, inputMode: 'numeric' }} InputProps={getAdornment('mobile')}
+      input = <TextField fullWidth label={lbl} value={form.mobile || ''} onChange={(e) => { numbersOnly(e); set('mobile')(e) }} onBlur={onBlur('mobile')} error={touched.mobile && !!errors.mobile} helperText={touched.mobile ? (errors.mobile || (form.mobile && isValidMobile(form.mobile) ? '✓ Valid US phone' : '')) : ''} inputProps={{ maxLength: 10, inputMode: 'numeric' }} InputProps={getAdornment('mobile')}
         FormHelperTextProps={{ sx: { color: !errors.mobile && form.mobile && isValidMobile(form.mobile) ? 'var(--success)' : undefined } }} />
     } else {
       input = <TextField fullWidth label={lbl} value={form[fieldName] || ''} onChange={set(fieldName)} onBlur={onBlur(fieldName)} error={touched[fieldName] && !!errors[fieldName]} helperText={touched[fieldName] && errors[fieldName]} type={fieldName === 'email' ? 'email' : 'text'} InputProps={getAdornment(fieldName)} />

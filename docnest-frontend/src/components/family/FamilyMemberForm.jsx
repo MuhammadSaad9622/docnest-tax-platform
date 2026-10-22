@@ -38,7 +38,7 @@ export default function FamilyMemberForm({ open, onClose, clientId, member, onSa
     let err
     if (field === 'memberName' && (!val || !val.trim())) err = 'Name is required'
     if (field === 'relation' && !val) err = 'Relation is required'
-    if (field === 'mobile' && val && !isValidMobile(val)) err = 'Must start with 6-9 and be 10 digits'
+    if (field === 'mobile' && val && !isValidMobile(val)) err = 'Enter a valid 10-digit US phone number'
     if (field === 'email' && val && !isValidEmail(val)) err = 'Enter a valid email'
     if (field === 'dob' && val) {
       const check = isFamilyDobValid(val, form.relation, clientDob)
@@ -65,7 +65,7 @@ export default function FamilyMemberForm({ open, onClose, clientId, member, onSa
     const errs = {}
     if (!form.memberName?.trim()) errs.memberName = 'Name is required'
     if (!form.relation) errs.relation = 'Relation is required'
-    if (form.mobile && !isValidMobile(form.mobile)) errs.mobile = 'Enter a valid Indian mobile number'
+    if (form.mobile && !isValidMobile(form.mobile)) errs.mobile = 'Enter a valid 10-digit US phone number'
     if (form.email && !isValidEmail(form.email)) errs.email = 'Enter a valid email'
     if (form.dob) {
       const check = isFamilyDobValid(form.dob, form.relation, clientDob)
@@ -141,7 +141,7 @@ export default function FamilyMemberForm({ open, onClose, clientId, member, onSa
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField fullWidth label="Mobile" value={form.mobile || ''} onChange={(e) => { numbersOnly(e); set('mobile')(e) }} onBlur={onBlur('mobile')}
-              error={touched.mobile && !!errors.mobile} helperText={touched.mobile ? (errors.mobile || (form.mobile && isValidMobile(form.mobile) ? '✓ Valid Indian mobile' : '')) : ''}
+              error={touched.mobile && !!errors.mobile} helperText={touched.mobile ? (errors.mobile || (form.mobile && isValidMobile(form.mobile) ? '✓ Valid US phone' : '')) : ''}
               inputProps={{ maxLength: 10, inputMode: 'numeric' }}
               InputProps={{ endAdornment: <InputAdornment position="end"><VIcon field="mobile"/></InputAdornment> }}
               FormHelperTextProps={{ sx: { color: !errors.mobile && form.mobile && isValidMobile(form.mobile) ? 'var(--success)' : undefined } }} />

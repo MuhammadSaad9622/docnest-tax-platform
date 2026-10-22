@@ -25,7 +25,7 @@ public class FamilyMemberDTO {
 
     private String gender;
 
-    @Pattern(regexp = "^$|^[6-9]\\d{9}$", message = "Enter a valid Indian mobile number")
+    @Pattern(regexp = "^$|^[2-9]\\d{2}[2-9]\\d{6}$", message = "Enter a valid 10-digit US phone number")
     private String mobile;
 
     @Email(message = "Enter a valid email address")

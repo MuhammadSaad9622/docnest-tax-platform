@@ -60,8 +60,8 @@ export default function RegisterPage() {
     if (segment === 'client') {
       if (!form.mobile.trim()) e.mobile = 'Mobile is required';
       if (form.dob && new Date(form.dob) > new Date()) e.dob = 'DOB cannot be in the future';
-      if (form.mobile && !/^[6-9]\d{9}$/.test(form.mobile) && form.mobile.length !== 10) {
-        e.mobile = 'Enter a valid 10-digit mobile number';
+      if (form.mobile && !/^[2-9]\d{2}[2-9]\d{6}$/.test(form.mobile)) {
+        e.mobile = 'Enter a valid 10-digit US phone number';
       }
     }
     if (!agreed) e.terms = 'You must agree to the terms';

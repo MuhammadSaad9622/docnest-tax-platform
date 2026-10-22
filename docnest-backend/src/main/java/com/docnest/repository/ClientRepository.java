@@ -19,14 +19,20 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
 
     boolean existsByMobileAndIdNot(String mobile, Long id);
 
+    /**
+     * Typed sentinels instead of NULL checks (Postgres cannot infer the type of
+     * "? IS NULL"): query "" = no search, locationId -1 = any office,
+     * scoped false = no office restriction (officeIds is then ignored).
+     */
     @Query("SELECT c FROM Client c WHERE " +
-            "(:query IS NULL OR LOWER(c.firstName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            "(:query = '' OR LOWER(c.firstName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
             "LOWER(c.lastName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
             "c.mobile LIKE CONCAT('%', :query, '%')) AND " +
-            "(:locationId IS NULL OR c.location.id = :locationId) AND " +
-            "(:officeIds IS NULL OR c.location.id IN :officeIds)")
+            "(:locationId = -1 OR c.location.id = :locationId) AND " +
+            "(:scoped = false OR c.location.id IN :officeIds)")
     Page<Client> searchClients(@Param("query") String query,
                                 @Param("locationId") Long locationId,
+                                @Param("scoped") boolean scoped,
                                 @Param("officeIds") Collection<Long> officeIds,
                                 Pageable pageable);
 

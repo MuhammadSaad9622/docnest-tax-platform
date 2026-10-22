@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 
-// ── Indian Mobile: starts with 6-9, exactly 10 digits ──
-export const isValidMobile = (m) => /^[6-9]\d{9}$/.test(m)
+// ── US phone (NANP): 10 digits, area code and exchange start with 2-9 ──
+export const isValidMobile = (m) => /^[2-9]\d{2}[2-9]\d{6}$/.test(m)
 
 // ── PAN: 5 uppercase letters + 4 digits + 1 uppercase letter ──
 export const isValidPAN = (pan) => /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(pan?.toUpperCase())
@@ -80,7 +80,7 @@ export const validateClientForm = (form, fieldConfig) => {
     if (fc.isRequired && (!val || !String(val).trim())) errs[fc.fieldName] = `${fc.label} is required`
   }
   // Mobile
-  if (form.mobile && !isValidMobile(form.mobile)) errs.mobile = 'Enter a valid Indian mobile number (starts with 6-9)'
+  if (form.mobile && !isValidMobile(form.mobile)) errs.mobile = 'Enter a valid 10-digit US phone number'
   // Email
   if (form.email && !isValidEmail(form.email)) errs.email = 'Enter a valid email address'
   // DOB

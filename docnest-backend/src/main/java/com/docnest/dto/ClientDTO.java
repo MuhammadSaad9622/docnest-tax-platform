@@ -23,7 +23,7 @@ public class ClientDTO {
     private String lastName;
 
     @NotBlank(message = "Mobile number is required")
-    @Pattern(regexp = "^[6-9]\\d{9}$", message = "Enter a valid Indian mobile number (starts with 6-9, 10 digits)")
+    @Pattern(regexp = "^[2-9]\\d{2}[2-9]\\d{6}$", message = "Enter a valid 10-digit US phone number")
     private String mobile;
 
     @Past(message = "Date of birth cannot be a future date")
