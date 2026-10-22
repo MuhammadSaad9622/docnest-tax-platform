@@ -24,9 +24,9 @@ public class DataLoader implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
 
     private static final List<String> DEFAULT_LOCATIONS = List.of(
-            "Thane", "Navi Mumbai", "Mumbai",
-            "Pune", "Nashik", "Aurangabad",
-            "Nagpur", "Kolhapur", "Solapur"
+            "Atlanta, GA", "Houston, TX", "Dallas, TX",
+            "Chicago, IL", "Miami, FL", "Newark, NJ",
+            "Charlotte, NC", "Phoenix, AZ", "Los Angeles, CA"
     );
 
     @Override
@@ -100,15 +100,15 @@ public class DataLoader implements CommandLineRunner {
     private void seedDocumentTypes() {
         if (docTypeRepo.count() == 0) {
             List<DocumentTypeConfig> base = List.of(
-                DocumentTypeConfig.builder().typeName("AADHAR").displayName("Aadhar Card").description("Aadhaar identity document").isRequired(true).isActive(true).build(),
-                DocumentTypeConfig.builder().typeName("PAN").displayName("PAN Card").description("Permanent Account Number card").isRequired(true).isActive(true).build(),
-                DocumentTypeConfig.builder().typeName("DRIVING_LICENSE").displayName("Driving License").description("Government driving permit").isRequired(true).isActive(true).build(),
-                DocumentTypeConfig.builder().typeName("ELECTRICITY_BILL").displayName("Electricity Bill").description("Address proof utility bill").isRequired(true).isActive(true).build(),
-                DocumentTypeConfig.builder().typeName("W2").displayName("W-2 Form").description("Wage and Tax Statement (US)").isRequired(false).isActive(true).build(),
+                DocumentTypeConfig.builder().typeName("AADHAR").displayName("Aadhar Card").description("Aadhaar identity document").isRequired(false).isActive(true).build(),
+                DocumentTypeConfig.builder().typeName("PAN").displayName("PAN Card").description("Permanent Account Number card").isRequired(false).isActive(true).build(),
+                DocumentTypeConfig.builder().typeName("DRIVING_LICENSE").displayName("Driving License").description("Government driving permit").isRequired(false).isActive(true).build(),
+                DocumentTypeConfig.builder().typeName("ELECTRICITY_BILL").displayName("Electricity Bill").description("Address proof utility bill").isRequired(false).isActive(true).build(),
+                DocumentTypeConfig.builder().typeName("W2").displayName("W-2 Form").description("Wage and Tax Statement (US)").isRequired(true).isActive(true).build(),
                 DocumentTypeConfig.builder().typeName("FORM_1099NEC").displayName("1099-NEC").description("Nonemployee Compensation (US)").isRequired(false).isActive(true).build(),
                 DocumentTypeConfig.builder().typeName("FORM_1099_MISC").displayName("1099-MISC").description("Miscellaneous Income (US)").isRequired(false).isActive(true).build(),
-                DocumentTypeConfig.builder().typeName("SSN_CARD").displayName("SSN Card").description("Social Security Card (US)").isRequired(false).isActive(true).build(),
-                DocumentTypeConfig.builder().typeName("US_PASSPORT").displayName("US Passport").description("United States Passport (US)").isRequired(false).isActive(true).build()
+                DocumentTypeConfig.builder().typeName("SSN_CARD").displayName("SSN Card").description("Social Security Card (US)").isRequired(true).isActive(true).build(),
+                DocumentTypeConfig.builder().typeName("US_PASSPORT").displayName("US Passport").description("United States Passport (US)").isRequired(true).isActive(true).build()
             );
             docTypeRepo.saveAll(base);
             log.info("Seeded {} document type configs", base.size());

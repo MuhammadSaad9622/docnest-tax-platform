@@ -3,6 +3,7 @@ package com.docnest.controller;
 import com.docnest.dto.TaxSlayerConfigDTO;
 import com.docnest.entity.TaxSlayerConfig;
 import com.docnest.repository.TaxSlayerConfigRepository;
+import com.docnest.service.TaxSlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +22,7 @@ import java.util.Map;
 public class TaxSlayerConfigController {
 
     private final TaxSlayerConfigRepository configRepo;
+    private final TaxSlayerService taxSlayerService;
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a");
 
@@ -34,7 +36,7 @@ public class TaxSlayerConfigController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TaxSlayerConfigDTO> updateConfig(@RequestBody TaxSlayerConfigDTO dto) {
         TaxSlayerConfig config = getOrCreate();
-        if (dto.getApiKey() != null)      config.setApiKey(dto.getApiKey());
+        if (dto.getApiKey() != null && !dto.getApiKey().startsWith("••••")) config.setApiKey(dto.getApiKey());
         if (dto.getApiBaseUrl() != null)  config.setApiBaseUrl(dto.getApiBaseUrl());
         if (dto.getFirmId() != null)     config.setFirmId(dto.getFirmId());
         if (dto.getTaxYear() != null)    config.setTaxYear(dto.getTaxYear());
@@ -46,19 +48,14 @@ public class TaxSlayerConfigController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> testConnection() {
         TaxSlayerConfig config = getOrCreate();
-        // Simulate connection check — in production this would call the real
-        // TaxSlayer Pro API endpoint using config.getApiBaseUrl() + config.getApiKey()
-        boolean hasKey = config.getApiKey() != null && !config.getApiKey().isBlank();
-        boolean hasUrl = config.getApiBaseUrl() != null && !config.getApiBaseUrl().isBlank();
-        String status = (hasKey && hasUrl) ? "CONNECTED" : "DISCONNECTED";
+        String[] result = taxSlayerService.testConnection(config);
+        String status = result[0];
         config.setConnectionStatus(status);
         config.setLastCheckedAt(LocalDateTime.now().format(FMT));
         configRepo.save(config);
         return ResponseEntity.ok(Map.of(
                 "status", status,
-                "message", "CONNECTED".equals(status)
-                        ? "Connection to TaxSlayer Pro appears valid."
-                        : "API key and base URL must be set before testing."
+                "message", result[1]
         ));
     }
 
@@ -72,12 +69,18 @@ public class TaxSlayerConfigController {
 
     private TaxSlayerConfigDTO toDTO(TaxSlayerConfig c) {
         return TaxSlayerConfigDTO.builder()
-                .apiKey(c.getApiKey())
+                .apiKey(maskKey(c.getApiKey()))
                 .apiBaseUrl(c.getApiBaseUrl())
                 .firmId(c.getFirmId())
                 .taxYear(c.getTaxYear())
                 .connectionStatus(c.getConnectionStatus())
                 .lastCheckedAt(c.getLastCheckedAt())
                 .build();
+    }
+
+    /** Never send the stored key back to the browser in full. */
+    private static String maskKey(String key) {
+        if (key == null || key.isBlank()) return key;
+        return "••••" + (key.length() > 4 ? key.substring(key.length() - 4) : "");
     }
 }

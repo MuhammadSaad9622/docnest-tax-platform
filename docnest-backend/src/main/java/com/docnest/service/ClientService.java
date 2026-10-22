@@ -29,12 +29,8 @@ public class ClientService {
     private final FamilyMemberRepository familyMemberRepository;
     private final DocumentRepository documentRepository;
     private final ActivityService activityService;
+    private final DocumentService documentService;
 
-private static final List<String> REQUIRED_DOC_TYPES =
-        Arrays.asList(
-                "AADHAR", "PAN", "DRIVING_LICENSE", "ELECTRICITY_BILL",
-                "W2", "FORM_1099NEC", "FORM_1099_MISC", "SSN_CARD", "US_PASSPORT"
-        );
 
     private void validateDob(LocalDate dob) {
         if (dob == null) return;
@@ -144,7 +140,8 @@ private static final List<String> REQUIRED_DOC_TYPES =
 
         Set<String> uploadedTypes = documentRepository.findByOwnerTypeAndOwnerId("CLIENT", client.getId())
                 .stream().map(d -> d.getDocumentType()).collect(Collectors.toSet());
-        boolean hasMissing = !uploadedTypes.containsAll(REQUIRED_DOC_TYPES);
+        List<String> requiredTypes = documentService.requiredDocTypes();
+        boolean hasMissing = !uploadedTypes.containsAll(requiredTypes);
 
         return ClientDTO.builder()
                 .id(client.getId())
@@ -160,7 +157,7 @@ private static final List<String> REQUIRED_DOC_TYPES =
                 .createdAt(client.getCreatedAt())
                 .familyMemberCount(familyCount)
                 .documentCount(docCount)
-                .totalDocTypes(REQUIRED_DOC_TYPES.size())
+                .totalDocTypes(requiredTypes.size())
                 .hasMissingDocuments(hasMissing)
                 .build();
     }

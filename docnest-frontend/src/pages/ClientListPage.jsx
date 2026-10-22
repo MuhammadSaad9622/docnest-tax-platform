@@ -5,7 +5,11 @@ import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import Pagination from '@mui/material/Pagination'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { MdPersonAdd } from 'react-icons/md'
+import { MdPersonAdd, MdDownload } from 'react-icons/md'
+import { toast } from 'react-toastify'
+import { taxslayerService } from '../services/taxslayerService'
+import { useAuth } from '../context/AuthContext'
+import { can } from '../utils/permissions'
 import ClientCard from '../components/client/ClientCard'
 import ClientFilters from '../components/client/ClientFilters'
 import SkeletonCard from '../components/ui/SkeletonCard'
@@ -14,6 +18,7 @@ import { clientService } from '../services/clientService'
 
 export default function ClientListPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [searchParams] = useSearchParams()
   const [clients, setClients] = useState([])
   const [totalPages, setTotal] = useState(0)
@@ -45,9 +50,17 @@ export default function ClientListPage() {
           <Typography variant="h4" sx={{ fontWeight: 600, mb: 0.5 }}>Client Directory</Typography>
           <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>Search and manage your global client base.</Typography>
         </Box>
-        <Button variant="contained" startIcon={<MdPersonAdd />} onClick={() => navigate('/clients/add')}>
-          Add New Client
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+          {can(user, 'editClient') && (
+            <Button variant="outlined" startIcon={<MdDownload />}
+              onClick={() => taxslayerService.downloadCsv().catch(e => toast.error(e.message))}>
+              Export to TaxSlayer Pro
+            </Button>
+          )}
+          <Button variant="contained" startIcon={<MdPersonAdd />} onClick={() => navigate('/clients/add')}>
+            Add New Client
+          </Button>
+        </Box>
       </Box>
 
       <Box sx={{ mb: 4 }}>

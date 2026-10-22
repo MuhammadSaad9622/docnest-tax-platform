@@ -46,6 +46,19 @@ public class Client {
     @JoinColumn(name = "location_id")
     private Location location;
 
+    /** TaxSlayer Pro sync: null (never sent), SYNCED, FAILED */
+    @Column(name = "taxslayer_status", length = 20)
+    private String taxslayerStatus;
+
+    @Column(name = "taxslayer_reference", length = 100)
+    private String taxslayerReference;
+
+    @Column(name = "taxslayer_synced_at")
+    private LocalDateTime taxslayerSyncedAt;
+
+    @Column(name = "taxslayer_message", length = 500)
+    private String taxslayerMessage;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

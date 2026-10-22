@@ -30,6 +30,8 @@ import DocumentPreviewModal from '../components/document/DocumentPreviewModal'
 import ConfirmModal from '../components/ui/ConfirmModal'
 import Badge from '../components/ui/Badge'
 import Spinner from '../components/ui/Spinner'
+import IntakeForm from '../components/intake/IntakeForm'
+import TaxSlayerPanel from '../components/client/TaxSlayerPanel'
 
 const GENDERS = ['Male', 'Female', 'Other']
 
@@ -57,6 +59,7 @@ export default function ClientDetailPage() {
   const [familyFormOpen, setFamilyFormOpen] = useState(false)
   const [editMember, setEditMember] = useState(null)
   const [deleteMemberId, setDeleteMemberId] = useState(null)
+  const [intake, setIntake] = useState(null)
 
   const loadClient = async () => {
     try {
@@ -82,6 +85,7 @@ export default function ClientDetailPage() {
     loadClient()
     loadCompletion()
     loadFamily()
+    clientService.getIntake(id).then(setIntake).catch(() => {})
     locationService.getAll().then(r => setLocations(r.data)).catch(() => {})
   }, [id])
 
@@ -151,7 +155,26 @@ export default function ClientDetailPage() {
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 5, borderBottom: '1px solid var(--border)' }}>
         <Tab label="Overview" />
         <Tab label={`Family (${members.length})`} />
+        <Tab label={intake?.status === 'SUBMITTED' ? 'Tax Intake ✓' : 'Tax Intake'} />
+        <Tab label="TaxSlayer Pro" />
       </Tabs>
+
+      {tab === 2 && (
+        <Card sx={{ p: 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Box>
+              <Typography variant="h6">{intake?.taxYear} Intake Questionnaire</Typography>
+              <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+                Completed by the client in their portal{intake?.submittedAt ? ` · submitted ${formatDate(intake.submittedAt)}` : ''}.
+              </Typography>
+            </Box>
+            <Badge label={intake?.status === 'SUBMITTED' ? 'Submitted' : intake?.id ? 'Draft' : 'Not started'} variant={intake?.status === 'SUBMITTED' ? 'success' : 'warning'} />
+          </Box>
+          <IntakeForm value={intake} readOnly />
+        </Card>
+      )}
+
+      {tab === 3 && <TaxSlayerPanel clientId={Number(id)} />}
 
       {/* Tab 0: Profile */}
       {tab === 0 && (

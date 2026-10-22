@@ -2,6 +2,7 @@ package com.docnest.config;
 
 import com.docnest.security.JwtAuthFilter;
 import com.docnest.security.CustomUserDetailsService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -54,6 +55,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().authenticated()
             )
+            // Missing/expired token → 401 (frontend logs out); role/office denial stays 403
+            .exceptionHandling(ex -> ex.authenticationEntryPoint(
+                    (req, res, e) -> res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")))
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -71,6 +75,7 @@ public class SecurityConfig {
             "http://localhost:5174",
             "https://docnest-pink.vercel.app"
         ));
+        List<String> originPatterns = new ArrayList<>();
 
         // Add any additional origins from environment variable
         if (allowedOrigins != null && !allowedOrigins.isEmpty()) {
@@ -78,10 +83,12 @@ public class SecurityConfig {
                     .map(String::trim)
                     .filter(s -> !s.isEmpty())
                     .filter(s -> !origins.contains(s))
-                    .forEach(origins::add);
+                    .forEach(o -> (o.contains("*") ? originPatterns : origins).add(o));
         }
 
         configuration.setAllowedOrigins(origins);
+        // Wildcards such as https://docnest-*.vercel.app cover Vercel preview URLs
+        configuration.setAllowedOriginPatterns(originPatterns);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));

@@ -1,45 +1,40 @@
 package com.docnest.service;
 
 import com.docnest.exception.FileStorageException;
-import org.springframework.beans.factory.annotation.Value;
+import com.docnest.entity.StoredFile;
+import com.docnest.repository.StoredFileRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.*;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class FileStorageService {
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    /** Paths of files kept in the database are prefixed with this marker. */
+    private static final String DB_PREFIX = "db:";
+
+    private final StoredFileRepository storedFileRepository;
 
     /**
-     * Stores a file organized by owner type and ID.
-     * e.g. uploads/client_1/uuid.pdf or uploads/family_3/uuid.jpg
+     * Stores the file bytes in Postgres and returns a "db:&lt;uuid&gt;" reference
+     * that is saved on the Document row.
      */
     public String storeFile(MultipartFile file, String ownerType, Long ownerId) {
         try {
-            String folderPrefix = ownerType.equalsIgnoreCase("FAMILY_MEMBER") 
-                    ? "family_" + ownerId 
-                    : "client_" + ownerId;
-            Path ownerDir = Paths.get(uploadDir, folderPrefix).toAbsolutePath().normalize();
-            Files.createDirectories(ownerDir);
-
-            String originalName = file.getOriginalFilename();
-            String extension = "";
-            if (originalName != null && originalName.contains(".")) {
-                extension = originalName.substring(originalName.lastIndexOf("."));
-            }
-            String uniqueName = UUID.randomUUID().toString() + extension;
-            Path targetPath = ownerDir.resolve(uniqueName);
-            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-
-            return Paths.get(folderPrefix, uniqueName).toString().replace("\\", "/");
+            String id = UUID.randomUUID().toString();
+            storedFileRepository.save(StoredFile.builder()
+                    .id(id)
+                    .contentType(file.getContentType())
+                    .sizeBytes(file.getSize())
+                    .data(file.getBytes())
+                    .build());
+            return DB_PREFIX + id;
         } catch (IOException e) {
             throw new FileStorageException("Failed to store file: " + e.getMessage());
         }
@@ -51,25 +46,18 @@ public class FileStorageService {
     }
 
     public void deleteFile(String relativePath) {
-        try {
-            Path filePath = Paths.get(uploadDir, relativePath).toAbsolutePath().normalize();
-            Files.deleteIfExists(filePath);
-        } catch (IOException e) {
-            throw new FileStorageException("Failed to delete file: " + e.getMessage());
+        if (relativePath != null && relativePath.startsWith(DB_PREFIX)) {
+            storedFileRepository.deleteById(relativePath.substring(DB_PREFIX.length()));
         }
     }
 
     public Resource loadFileAsResource(String relativePath) {
-        try {
-            Path filePath = Paths.get(uploadDir, relativePath).toAbsolutePath().normalize();
-            Resource resource = new UrlResource(filePath.toUri());
-            if (resource.exists() && resource.isReadable()) {
-                return resource;
-            }
-            throw new FileStorageException("File not found or not readable: " + relativePath);
-        } catch (MalformedURLException e) {
+        if (relativePath == null || !relativePath.startsWith(DB_PREFIX)) {
             throw new FileStorageException("File not found: " + relativePath);
         }
+        return storedFileRepository.findById(relativePath.substring(DB_PREFIX.length()))
+                .map(f -> (Resource) new ByteArrayResource(f.getData()))
+                .orElseThrow(() -> new FileStorageException("File not found: " + relativePath));
     }
 
     public String detectDocumentType(String filename) {

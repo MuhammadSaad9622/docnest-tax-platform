@@ -3,6 +3,7 @@ package com.docnest.dto;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -22,4 +23,7 @@ public class DocumentDTO {
     private Integer ocrConfidence;
     private LocalDateTime uploadDate;
     private String previewUrl;
+    /** SSNs are masked here; the full values only leave the server in the TaxSlayer export. */
+    private Map<String, String> extractedFields;
+    private String reviewStatus;
 }

@@ -17,6 +17,7 @@ import { validateDocument } from '../../utils/documentValidators'
 import { useAuth } from '../../context/AuthContext'
 import { can } from '../../utils/permissions'
 import { portalService } from '../../services/portalService'
+import ExtractedFieldsPanel from './ExtractedFieldsPanel'
 
 const DOC_ICONS = {
   AADHAR:           { icon: '🪪', color: '#4F46E5' },
@@ -115,13 +116,14 @@ export default function DocumentCard({ ownerType, ownerId, docType, document: do
     try {
       if (isClientPortal) {
         if (doc) {
-          toast.info('Replace existing document from your portal coming soon')
+          await portalService.replace(doc.id, file, rawText, validation.confidence)
+          toast.success(`${docTypeLabel(docType)} replaced & verified ✅`)
         } else {
           await portalService.upload(docType, file, rawText, validation.confidence)
           toast.success(`${docTypeLabel(docType)} uploaded & verified ✅`)
         }
       } else if (doc) {
-        await documentService.replace(doc.id, file)
+        await documentService.replace(doc.id, file, rawText, validation.confidence)
         toast.success(`${docTypeLabel(docType)} replaced & verified ✅`)
       } else {
         await documentService.upload(ownerType, ownerId, docType, file, rawText, validation.confidence)
@@ -218,6 +220,11 @@ export default function DocumentCard({ ownerType, ownerId, docType, document: do
           <MdInsertDriveFile size={18} color="var(--primary)" />
           <Typography variant="caption" sx={{ color: 'var(--text-secondary)', fontWeight: 500, maxWidth: 180 }} noWrap>{doc.fileName}</Typography>
         </Box>
+      )}
+
+      {/* ── AI/OCR-extracted tax fields ── */}
+      {isUploaded && !isProcessing && (
+        <ExtractedFieldsPanel document={doc} canReview={!isClientPortal} onUpdated={onRefresh} />
       )}
 
       {/* ── Drop zone (when no processing active) ── */}

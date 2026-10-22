@@ -1,0 +1,20 @@
+# Vercel container function for the Spring Boot API.
+# Stateless: data and uploaded files live in Neon Postgres.
+
+# Stage 1: Build
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+WORKDIR /app
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+COPY src ./src
+RUN mvn clean package -DskipTests -B
+
+# Stage 2: Run
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+# Vercel routes traffic to $PORT (default 80)
+ENV PORT=80
+EXPOSE 80
+# Tuned for fast cold starts on a 2 GB / 1 vCPU instance
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC", "-Dspring.jmx.enabled=false", "-jar", "app.jar"]

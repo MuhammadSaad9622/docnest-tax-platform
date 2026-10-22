@@ -1,10 +1,13 @@
 package com.docnest.controller;
 
 import com.docnest.dto.DocumentDTO;
+import com.docnest.entity.TaxIntake;
 import com.docnest.entity.User;
 import com.docnest.repository.UserRepository;
 import com.docnest.service.ClientService;
 import com.docnest.service.DocumentService;
+import com.docnest.service.TaxIntakeService;
+import org.springframework.core.io.Resource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +32,7 @@ public class ClientPortalController {
     private final UserRepository userRepository;
     private final DocumentService documentService;
     private final ClientService clientService;
+    private final TaxIntakeService taxIntakeService;
 
     @GetMapping("/me")
     @PreAuthorize("hasRole('CLIENT')")
@@ -91,6 +95,50 @@ public class ClientPortalController {
         }
         documentService.deleteDocument(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/documents/{id}/replace")
+    @PreAuthorize("hasRole('CLIENT')")
+    public ResponseEntity<DocumentDTO> replaceMyDocument(
+            Authentication auth,
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "ocrText", required = false) String ocrText,
+            @RequestParam(value = "confidence", required = false) Integer confidence) {
+        if (!ownsDocument(auth, id)) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        return ResponseEntity.ok(documentService.replaceDocument(id, file, ocrText, confidence));
+    }
+
+    @GetMapping("/documents/{id}/preview")
+    @PreAuthorize("hasRole('CLIENT')")
+    public ResponseEntity<Resource> previewMyDocument(Authentication auth, @PathVariable Long id) {
+        if (!ownsDocument(auth, id)) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        return DocumentController.fileResponse(documentService.getDocumentById(id), documentService.loadDocumentAsResource(id));
+    }
+
+    @GetMapping("/intake")
+    @PreAuthorize("hasRole('CLIENT')")
+    public ResponseEntity<TaxIntake> myIntake(Authentication auth, @RequestParam(required = false) Integer taxYear) {
+        Long clientId = resolveClientId(auth.getName());
+        if (clientId == null) return ResponseEntity.badRequest().build();
+        return ResponseEntity.ok(taxIntakeService.get(clientId, taxYear));
+    }
+
+    @PutMapping("/intake")
+    @PreAuthorize("hasRole('CLIENT')")
+    public ResponseEntity<TaxIntake> saveIntake(Authentication auth,
+                                                @RequestBody TaxIntake intake,
+                                                @RequestParam(defaultValue = "false") boolean submit) {
+        Long clientId = resolveClientId(auth.getName());
+        if (clientId == null) return ResponseEntity.badRequest().build();
+        return ResponseEntity.ok(taxIntakeService.save(clientId, intake, submit));
+    }
+
+    private boolean ownsDocument(Authentication auth, Long documentId) {
+        Long clientId = resolveClientId(auth.getName());
+        if (clientId == null) return false;
+        var doc = documentService.getDocumentById(documentId);
+        return "CLIENT".equals(doc.getOwnerType()) && doc.getOwnerId().equals(clientId);
     }
 
     private Long resolveClientId(String email) {

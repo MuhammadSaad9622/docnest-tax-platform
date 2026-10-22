@@ -1,9 +1,12 @@
 package com.docnest.controller;
 
 import com.docnest.dto.ClientDTO;
+import com.docnest.entity.TaxIntake;
 import com.docnest.entity.User;
 import com.docnest.repository.UserRepository;
 import com.docnest.service.ClientService;
+import com.docnest.service.TaxIntakeService;
+import com.docnest.security.AccessGuard;
 import com.docnest.security.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,8 @@ public class ClientController {
     private final ClientService clientService;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
+    private final AccessGuard accessGuard;
+    private final TaxIntakeService taxIntakeService;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','EMPLOYEE')")
@@ -55,54 +60,41 @@ public class ClientController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','EMPLOYEE')")
-    public ResponseEntity<ClientDTO> getClient(@PathVariable Long id) {
+    public ResponseEntity<ClientDTO> getClient(@PathVariable Long id, Authentication auth) {
+        accessGuard.checkClient(auth, id);
         return ResponseEntity.ok(clientService.getClientById(id));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public ResponseEntity<ClientDTO> updateClient(@PathVariable Long id, @Valid @RequestBody ClientDTO dto) {
+    public ResponseEntity<ClientDTO> updateClient(@PathVariable Long id, @Valid @RequestBody ClientDTO dto, Authentication auth) {
+        accessGuard.checkClient(auth, id);
         return ResponseEntity.ok(clientService.updateClient(id, dto));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public ResponseEntity<Void> deleteClient(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteClient(@PathVariable Long id, Authentication auth) {
+        accessGuard.checkClient(auth, id);
         clientService.deleteClient(id);
         return ResponseEntity.noContent().build();
     }
 
-    private boolean isAdmin(Authentication auth) {
-        return auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+    /** Staff view of the client's portal intake questionnaire. */
+    @GetMapping("/{id}/intake")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','EMPLOYEE')")
+    public ResponseEntity<TaxIntake> getIntake(@PathVariable Long id,
+                                               @RequestParam(required = false) Integer taxYear,
+                                               Authentication auth) {
+        accessGuard.checkClient(auth, id);
+        return ResponseEntity.ok(taxIntakeService.get(id, taxYear));
     }
 
-    /**
-     * Resolves which offices the current user can see.
-     *  - ADMIN → empty list = no restriction
-     *  - MANAGER → own office (if assigned) + all supervised offices
-     *  - EMPLOYEE → own assigned office only
-     *  - If no offices resolve, return null = unrestricted (graceful fallback)
-     */
+    private boolean isAdmin(Authentication auth) {
+        return accessGuard.isAdmin(auth);
+    }
+
     private List<Long> resolveVisibleOffices(Authentication auth) {
-        if (auth == null || isAdmin(auth)) return new ArrayList<>();
-        User user = userRepository.findByEmail(auth.getName()).orElse(null);
-        if (user == null) return null;
-
-        if (user.getRole() == User.Role.MANAGER) {
-            List<Long> offices = new ArrayList<>();
-            if (user.getAssignedOffice() != null) offices.add(user.getAssignedOffice());
-            if (user.getSupervisedOffices() != null) {
-                user.getSupervisedOffices().forEach(loc -> offices.add(loc.getId()));
-            }
-            return offices.isEmpty() ? null : offices;
-        }
-
-        if (user.getRole() == User.Role.EMPLOYEE) {
-            return user.getAssignedOffice() != null
-                    ? List.of(user.getAssignedOffice())
-                    : null;
-        }
-
-        return null;
+        return accessGuard.resolveVisibleOffices(auth);
     }
 }

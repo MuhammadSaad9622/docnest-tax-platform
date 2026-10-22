@@ -21,9 +21,11 @@ export const documentService = {
     })
   },
 
-  replace: (documentId, file) => {
+  replace: (documentId, file, ocrText, confidence) => {
     const form = new FormData()
     form.append('file', file)
+    if (ocrText) form.append('ocrText', ocrText)
+    if (confidence != null) form.append('confidence', confidence)
     return api.put(`/api/documents/replace/${documentId}`, form, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
@@ -33,6 +35,9 @@ export const documentService = {
 
   /** Get document completion stats */
   getCompletion: (ownerType, ownerId) => api.get(`/api/documents/completion/${ownerType}/${ownerId}`),
+
+  /** Preparer confirms/corrects OCR-extracted tax fields */
+  updateFields: (documentId, fields) => api.put(`/api/documents/${documentId}/fields`, fields).then(r => r.data),
 
   getPreviewUrl: (documentId) => `${import.meta.env.VITE_API_URL}/api/documents/preview/${documentId}`,
 }

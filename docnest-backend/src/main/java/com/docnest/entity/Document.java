@@ -45,6 +45,14 @@ public class Document {
     @Column(name = "ocr_extracted_text", columnDefinition = "TEXT")
     private String ocrExtractedText;
 
+    /** Structured box-level values parsed from the OCR text, stored as JSON. */
+    @Column(name = "extracted_fields", columnDefinition = "TEXT")
+    private String extractedFields;
+
+    /** NEEDS_REVIEW after automatic extraction, VERIFIED once a preparer confirms it. */
+    @Column(name = "review_status", length = 20)
+    private String reviewStatus;
+
     @CreationTimestamp
     @Column(name = "upload_date", updatable = false)
     private LocalDateTime uploadDate;

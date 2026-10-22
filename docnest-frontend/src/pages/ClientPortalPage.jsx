@@ -15,11 +15,13 @@ import { useAuth } from '../context/AuthContext'
 import DocumentCard from '../components/document/DocumentCard'
 import Spinner from '../components/ui/Spinner'
 import { docTypeLabel } from '../utils/formatters'
+import Tabs from '@mui/material/Tabs'
+import Tab from '@mui/material/Tab'
+import Button from '@mui/material/Button'
+import DocumentPreviewModal from '../components/document/DocumentPreviewModal'
+import IntakeForm from '../components/intake/IntakeForm'
 
-const DOC_TYPES = [
-  'AADHAR', 'PAN', 'DRIVING_LICENSE', 'ELECTRICITY_BILL',
-  'W2', 'FORM_1099NEC', 'FORM_1099_MISC', 'SSN_CARD', 'US_PASSPORT',
-]
+const DOC_TYPES = ['W2', 'FORM_1099NEC', 'FORM_1099_MISC', 'SSN_CARD', 'US_PASSPORT']
 
 export default function ClientPortalPage() {
   const { user, logout } = useAuth()
@@ -29,15 +31,21 @@ export default function ClientPortalPage() {
   const [docs, setDocs] = useState([])
   const [completion, setCompletion] = useState({ uploaded: 0, total: 9, percentage: 0 })
   const [loading, setLoading] = useState(true)
+  const [tab, setTab] = useState(0)
+  const [previewDoc, setPreviewDoc] = useState(null)
+  const [intake, setIntake] = useState(null)
+  const [savingIntake, setSavingIntake] = useState(false)
 
   const load = async () => {
     try {
-      const [me, docRes, compRes] = await Promise.all([
+      const [me, docRes, compRes, intakeRes] = await Promise.all([
         portalService.getMe(),
         portalService.getDocuments(),
         portalService.getCompletion(),
+        portalService.getIntake().catch(() => null),
       ])
       setProfile(me.profile || {})
+      setIntake(prev => prev || intakeRes)
       setDocs(docRes)
       setCompletion(compRes)
     } catch (e) {
@@ -57,6 +65,16 @@ export default function ClientPortalPage() {
     } catch (e) {
       toast.error('Could not delete document')
     }
+  }
+
+  const handleSaveIntake = async (submit) => {
+    if (submit && !intake?.filingStatus) { toast.error('Please choose your filing status'); return }
+    setSavingIntake(true)
+    try {
+      setIntake(await portalService.saveIntake(intake, submit))
+      toast.success(submit ? 'Questionnaire sent to your tax preparer' : 'Progress saved')
+    } catch (e) { toast.error(e.message) }
+    finally { setSavingIntake(false) }
   }
 
   const handleLogout = () => {
@@ -142,7 +160,34 @@ export default function ClientPortalPage() {
         </Box>
       </Card>
 
+      <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 3, borderBottom: '1px solid var(--border)' }}>
+        <Tab label="Documents" />
+        <Tab label={intake?.status === 'SUBMITTED' ? 'Tax Questionnaire ✓' : 'Tax Questionnaire'} />
+      </Tabs>
+
+      {tab === 1 && (
+        <Card sx={{ p: { xs: 2.5, sm: 4 }, mb: 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 1 }}>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>{intake?.taxYear} Tax Questionnaire</Typography>
+              <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+                Answer from home — no office visit needed. You can save and come back any time.
+              </Typography>
+            </Box>
+            <Chip label={intake?.status === 'SUBMITTED' ? 'Submitted' : 'Draft'} color={intake?.status === 'SUBMITTED' ? 'success' : 'default'} sx={{ fontWeight: 700 }} />
+          </Box>
+          <IntakeForm value={intake} onChange={setIntake} />
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mt: 3 }}>
+            <Button variant="outlined" onClick={() => handleSaveIntake(false)} disabled={savingIntake}>Save draft</Button>
+            <Button variant="contained" onClick={() => handleSaveIntake(true)} disabled={savingIntake}>
+              {intake?.status === 'SUBMITTED' ? 'Update & resubmit' : 'Submit to preparer'}
+            </Button>
+          </Box>
+        </Card>
+      )}
+
       {/* Document Grid */}
+      {tab === 0 && (<>
       <Grid container spacing={2.5}>
         {DOC_TYPES.map(type => {
           const doc = docs.find(d => d.documentType === type)
@@ -156,6 +201,7 @@ export default function ClientPortalPage() {
                 onRefresh={load}
                 compact
                 isClientPortal
+                onPreview={setPreviewDoc}
               />
             </Grid>
           )
@@ -167,7 +213,7 @@ export default function ClientPortalPage() {
         <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.95rem', mb: 2 }}>Upload Tips</Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           {['Use clear, well-lit photos or scans — avoid glare and shadows',
-            'PDF, JPG, and PNG files up to 20 MB are accepted',
+            'PDF, JPG, and PNG files up to 4 MB are accepted',
             'Documents are auto-scanned with OCR for instant validation',
             'Your tax preparer will be notified once your documents are verified'].map((tip, i) => (
               <Box key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
@@ -177,6 +223,10 @@ export default function ClientPortalPage() {
             ))}
           </Box>
       </Card>
+      </>)}
+
+      <DocumentPreviewModal open={!!previewDoc} document={previewDoc} onClose={() => setPreviewDoc(null)}
+        previewPath={previewDoc ? portalService.previewPath(previewDoc.id) : null} />
     </Box>
   )
 }

@@ -25,7 +25,8 @@ API.interceptors.response.use(
     if (error.response) {
       const { status, data } = error.response;
 
-      if (status === 401 || status === 403) {
+      // 401 = missing/expired session. 403 = role/office denial, which must not log the user out.
+      if (status === 401) {
         console.warn('[API] Auth failed, clearing session');
         localStorage.removeItem('docnest_token');
         if (!window.location.pathname.includes('/login')) {

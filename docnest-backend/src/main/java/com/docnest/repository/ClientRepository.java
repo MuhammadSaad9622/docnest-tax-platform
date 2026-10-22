@@ -41,17 +41,15 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
     long countByCreatedAtAfterAndLocationIdIn(LocalDateTime date, Collection<Long> officeIds);
 
     @Query("SELECT COUNT(DISTINCT c) FROM Client c WHERE " +
-            "NOT EXISTS (SELECT d FROM Document d WHERE d.ownerType = 'CLIENT' AND d.ownerId = c.id AND d.documentType = 'AADHAR') OR " +
-            "NOT EXISTS (SELECT d FROM Document d WHERE d.ownerType = 'CLIENT' AND d.ownerId = c.id AND d.documentType = 'PAN') OR " +
-            "NOT EXISTS (SELECT d FROM Document d WHERE d.ownerType = 'CLIENT' AND d.ownerId = c.id AND d.documentType = 'DRIVING_LICENSE') OR " +
-            "NOT EXISTS (SELECT d FROM Document d WHERE d.ownerType = 'CLIENT' AND d.ownerId = c.id AND d.documentType = 'ELECTRICITY_BILL')")
+            "NOT EXISTS (SELECT d FROM Document d WHERE d.ownerType = 'CLIENT' AND d.ownerId = c.id AND d.documentType = 'W2') OR " +
+            "NOT EXISTS (SELECT d FROM Document d WHERE d.ownerType = 'CLIENT' AND d.ownerId = c.id AND d.documentType = 'SSN_CARD') OR " +
+            "NOT EXISTS (SELECT d FROM Document d WHERE d.ownerType = 'CLIENT' AND d.ownerId = c.id AND d.documentType = 'US_PASSPORT')")
     long countClientsWithMissingDocuments();
 
     @Query("SELECT COUNT(DISTINCT c) FROM Client c WHERE " +
             "c.location.id IN :officeIds AND (" +
-            "NOT EXISTS (SELECT d FROM Document d WHERE d.ownerType = 'CLIENT' AND d.ownerId = c.id AND d.documentType = 'AADHAR') OR " +
-            "NOT EXISTS (SELECT d FROM Document d WHERE d.ownerType = 'CLIENT' AND d.ownerId = c.id AND d.documentType = 'PAN') OR " +
-            "NOT EXISTS (SELECT d FROM Document d WHERE d.ownerType = 'CLIENT' AND d.ownerId = c.id AND d.documentType = 'DRIVING_LICENSE') OR " +
-            "NOT EXISTS (SELECT d FROM Document d WHERE d.ownerType = 'CLIENT' AND d.ownerId = c.id AND d.documentType = 'ELECTRICITY_BILL'))")
+            "NOT EXISTS (SELECT d FROM Document d WHERE d.ownerType = 'CLIENT' AND d.ownerId = c.id AND d.documentType = 'W2') OR " +
+            "NOT EXISTS (SELECT d FROM Document d WHERE d.ownerType = 'CLIENT' AND d.ownerId = c.id AND d.documentType = 'SSN_CARD') OR " +
+            "NOT EXISTS (SELECT d FROM Document d WHERE d.ownerType = 'CLIENT' AND d.ownerId = c.id AND d.documentType = 'US_PASSPORT'))")
     long countScopedClientsWithMissingDocuments(@Param("officeIds") Collection<Long> officeIds);
 }
