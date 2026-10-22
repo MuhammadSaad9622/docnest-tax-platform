@@ -30,8 +30,9 @@ export default function LoginPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      await login(form.email, form.password);
-      navigate('/dashboard');
+      const response = await login(form.email, form.password);
+      const dest = response?.role === 'CLIENT' ? '/portal' : '/dashboard';
+      navigate(dest);
     } catch (err) {
       setServerError(err.message || 'Invalid credentials');
     } finally {

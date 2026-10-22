@@ -34,6 +34,12 @@ export const docTypeLabel = (type) => ({
   PAN:             'PAN Card',
   DRIVING_LICENSE: 'Driving License',
   ELECTRICITY_BILL:'Electricity Bill',
+  W2:              'W-2 Form',
+  W2_FORM:         'W-2 Form',
+  FORM_1099NEC:    '1099-NEC',
+  FORM_1099_MISC:  '1099-MISC',
+  SSN_CARD:        'SSN Card',
+  US_PASSPORT:     'US Passport',
 })[type] || type
 
 // Action → readable label

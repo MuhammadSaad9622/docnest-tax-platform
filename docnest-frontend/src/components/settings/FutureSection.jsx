@@ -2,12 +2,11 @@ import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
-import { MdRocket, MdGroup, MdAssessment, MdFileDownload, MdSecurity } from 'react-icons/md'
+import { MdRocket, MdAssessment, MdFileDownload, MdSecurity } from 'react-icons/md'
 
 const FEATURES = [
-  { icon: <MdGroup size={20}/>, title: 'Multi-Admin Support', desc: 'Role-based access with multiple administrators', color: '#4F46E5' },
-  { icon: <MdSecurity size={20}/>, title: 'Role Management', desc: 'Fine-grained permissions and user roles', color: '#8B5CF6' },
-  { icon: <MdAssessment size={20}/>, title: 'Audit Reports', desc: 'Detailed compliance and audit trail exports', color: '#10B981' },
+  { icon: <MdSecurity size={20}/>, title: 'Team Scoping', desc: 'EMPLOYEEs see only their assigned clients; MANAGERS see their team', color: '#8B5CF6' },
+  { icon: <MdAssessment size={20}/>, title: 'Audit Reports', desc: 'Detailed compliance and audit trail exports (PDF/Excel)', color: '#10B981' },
   { icon: <MdFileDownload size={20}/>, title: 'Analytics Export', desc: 'Export dashboards and reports to PDF/Excel', color: '#F59E0B' },
 ]
 

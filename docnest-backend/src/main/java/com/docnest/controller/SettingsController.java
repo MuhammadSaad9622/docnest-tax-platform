@@ -4,6 +4,7 @@ import com.docnest.entity.*;
 import com.docnest.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,11 +27,13 @@ public class SettingsController {
     // ── Form Fields ──────────────────────────────────────
 
     @GetMapping("/form-fields")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<FormFieldConfig>> getFormFields() {
         return ResponseEntity.ok(formFieldRepo.findAllByOrderByDisplayOrderAsc());
     }
 
     @PutMapping("/form-fields")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<FormFieldConfig>> updateFormFields(@RequestBody List<FormFieldConfig> fields) {
         List<FormFieldConfig> saved = fields.stream().map(f -> {
             FormFieldConfig existing = formFieldRepo.findById(f.getId())
@@ -46,16 +49,19 @@ public class SettingsController {
     // ── Document Types ───────────────────────────────────
 
     @GetMapping("/document-types")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<DocumentTypeConfig>> getDocTypes() {
         return ResponseEntity.ok(docTypeRepo.findAllByOrderByIdAsc());
     }
 
     @GetMapping("/document-types/active")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','EMPLOYEE')")
     public ResponseEntity<List<DocumentTypeConfig>> getActiveDocTypes() {
         return ResponseEntity.ok(docTypeRepo.findByIsActiveTrue());
     }
 
     @PostMapping("/document-types")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DocumentTypeConfig> addDocType(@RequestBody DocumentTypeConfig dt) {
         if (docTypeRepo.existsByTypeName(dt.getTypeName())) {
             return ResponseEntity.badRequest().build();
@@ -64,6 +70,7 @@ public class SettingsController {
     }
 
     @PutMapping("/document-types/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DocumentTypeConfig> updateDocType(@PathVariable Long id, @RequestBody DocumentTypeConfig dt) {
         DocumentTypeConfig existing = docTypeRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Doc type not found: " + id));
@@ -77,6 +84,7 @@ public class SettingsController {
     }
 
     @DeleteMapping("/document-types/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteDocType(@PathVariable Long id) {
         docTypeRepo.deleteById(id);
         return ResponseEntity.noContent().build();
@@ -85,6 +93,7 @@ public class SettingsController {
     // ── Admin Profile ────────────────────────────────────
 
     @GetMapping("/profile")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AdminProfile> getProfile() {
         AdminProfile profile = profileRepo.findById(1L)
                 .orElse(AdminProfile.builder().id(1L).fullName("Admin").email("admin@docnest.com").build());
@@ -92,6 +101,7 @@ public class SettingsController {
     }
 
     @PutMapping("/profile")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AdminProfile> updateProfile(@RequestBody AdminProfile profile) {
         AdminProfile existing = profileRepo.findById(1L)
                 .orElse(AdminProfile.builder().id(1L).build());
@@ -102,6 +112,7 @@ public class SettingsController {
     }
 
     @PostMapping("/profile/avatar")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> uploadAvatar(@RequestParam("file") MultipartFile file) throws IOException {
         Path dir = Paths.get("uploads", "admin");
         Files.createDirectories(dir);
@@ -118,6 +129,7 @@ public class SettingsController {
     }
 
     @GetMapping("/profile/avatar/view")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','EMPLOYEE')")
     public ResponseEntity<byte[]> viewAvatar() throws IOException {
         AdminProfile profile = profileRepo.findById(1L).orElse(null);
         if (profile == null || profile.getProfileImage() == null) {
@@ -139,11 +151,13 @@ public class SettingsController {
     // ── System Preferences ───────────────────────────────
 
     @GetMapping("/preferences")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<SystemPreference>> getPreferences() {
         return ResponseEntity.ok(prefRepo.findAll());
     }
 
     @PutMapping("/preferences")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<SystemPreference>> updatePreferences(@RequestBody List<SystemPreference> prefs) {
         List<SystemPreference> saved = prefs.stream().map(p -> {
             SystemPreference existing = prefRepo.findById(p.getId())

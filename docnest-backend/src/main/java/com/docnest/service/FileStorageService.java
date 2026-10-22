@@ -75,10 +75,15 @@ public class FileStorageService {
     public String detectDocumentType(String filename) {
         if (filename == null) return null;
         String lower = filename.toLowerCase();
-        if (lower.contains("aadhar") || lower.contains("aadhaar")) return "AADHAR";
-        if (lower.contains("pan"))                                   return "PAN";
+        if (lower.contains("aadhar") || lower.contains("aadhaar"))   return "AADHAR";
+        if (lower.contains("pan"))                                     return "PAN";
         if (lower.contains("driving") || lower.contains("license") || lower.contains("licence")) return "DRIVING_LICENSE";
-        if (lower.contains("electricity") || lower.contains("bill") || lower.contains("elec"))   return "ELECTRICITY_BILL";
+        if (lower.contains("electricity") || lower.contains("bill") || lower.contains("elec"))     return "ELECTRICITY_BILL";
+        if (lower.contains("w2") || lower.contains("w-2") || lower.contains("wage"))               return "W2";
+        if (lower.contains("1099nec") || lower.contains("1099-nec") || lower.contains("nec"))      return "FORM_1099NEC";
+        if (lower.contains("1099misc") || lower.contains("1099-misc") || lower.contains("misc"))   return "FORM_1099_MISC";
+        if (lower.contains("ssn") || lower.contains("social") || lower.contains("security"))       return "SSN_CARD";
+        if (lower.contains("passport"))                                                                 return "US_PASSPORT";
         return null;
     }
 }

@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -35,7 +37,31 @@ public class User {
 
     private boolean enabled = true;
 
+    /**
+     * Lightweight office scoping. Null = no office restriction (ADMIN sees all).
+     * Non-null = user is restricted to this office's clients.
+     */
+    @Column(name = "assigned_office")
+    private Long assignedOffice;
+
+    /**
+     * For MANAGER role: the set of offices this manager supervises.
+     * A manager sees clients across all their supervised offices.
+     * Emps see only their assigned office; admins see everything.
+     */
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "user_supervised_offices",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "office_id")
+    )
+    private List<Location> supervisedOffices = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "linked_client_id")
+    private Client linkedClient;
+
     public enum Role {
-        ADMIN, EMPLOYEE, MANAGER
+        ADMIN, MANAGER, EMPLOYEE, CLIENT
     }
 }

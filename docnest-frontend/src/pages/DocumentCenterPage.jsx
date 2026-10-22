@@ -14,6 +14,8 @@ import { clientService } from '../services/clientService'
 import { documentService } from '../services/documentService'
 import { familyService } from '../services/familyService'
 import { getInitials, avatarColor, getFullName, formatDate } from '../utils/formatters'
+import { useAuth } from '../context/AuthContext'
+import { can } from '../utils/permissions'
 import DocumentCard from '../components/document/DocumentCard'
 import DocumentPreviewModal from '../components/document/DocumentPreviewModal'
 import FamilyMemberCard from '../components/family/FamilyMemberCard'
@@ -21,11 +23,16 @@ import FamilyMemberForm from '../components/family/FamilyMemberForm'
 import ConfirmModal from '../components/ui/ConfirmModal'
 import Spinner from '../components/ui/Spinner'
 
-const DOC_TYPES = ['AADHAR', 'PAN', 'DRIVING_LICENSE', 'ELECTRICITY_BILL']
+const DOC_TYPES = [
+  'AADHAR', 'PAN', 'DRIVING_LICENSE', 'ELECTRICITY_BILL',
+  'W2', 'FORM_1099NEC', 'FORM_1099_MISC', 'SSN_CARD', 'US_PASSPORT',
+]
 
 export default function DocumentCenterPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const canAddFamily = can(user, 'addFamilyMember')
 
   const [client, setClient] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -192,15 +199,17 @@ export default function DocumentCenterPage() {
               background: '#F3E8FF', color: '#7C3AED',
             }} />
           </Box>
-          <Button
-            variant="contained"
-            startIcon={<MdAdd />}
-            onClick={() => { setEditMember(null); setFamilyFormOpen(true) }}
-            size="small"
-            sx={{ background: '#7C3AED', '&:hover': { background: '#6D28D9' } }}
-          >
-            Add Member
-          </Button>
+          {canAddFamily && (
+            <Button
+              variant="contained"
+              startIcon={<MdAdd />}
+              onClick={() => { setEditMember(null); setFamilyFormOpen(true) }}
+              size="small"
+              sx={{ background: '#7C3AED', '&:hover': { background: '#6D28D9' } }}
+            >
+              Add Member
+            </Button>
+          )}
         </Box>
 
         {members.length === 0 ? (
@@ -215,14 +224,16 @@ export default function DocumentCenterPage() {
             <Typography variant="caption" sx={{ color: 'var(--text-muted)', display: 'block', mt: 0.5, mb: 2 }}>
               Add family members to manage their documents separately
             </Typography>
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<MdAdd />}
-              onClick={() => { setEditMember(null); setFamilyFormOpen(true) }}
-            >
-              Add First Member
-            </Button>
+            {canAddFamily && (
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<MdAdd />}
+                onClick={() => { setEditMember(null); setFamilyFormOpen(true) }}
+              >
+                Add First Member
+              </Button>
+            )}
           </Card>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>

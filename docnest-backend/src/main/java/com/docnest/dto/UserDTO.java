@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -14,4 +16,9 @@ public class UserDTO {
     private String fullName;
     private String email;
     private String role;
+    private Boolean enabled;
+    private Long assignedOffice;
+    private Long linkedClient;
+    /** Office IDs this user supervises (MANAGER). null/empty = no supervision set. */
+    private List<Long> supervisedOffices;
 }

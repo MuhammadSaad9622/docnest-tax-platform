@@ -22,6 +22,8 @@ import { familyService } from '../services/familyService'
 import { locationService } from '../services/locationService'
 import { getInitials, avatarColor, getFullName, formatDate } from '../utils/formatters'
 import { isValidMobile } from '../utils/validators'
+import { useAuth } from '../context/AuthContext'
+import { can } from '../utils/permissions'
 import FamilyMemberCard from '../components/family/FamilyMemberCard'
 import FamilyMemberForm from '../components/family/FamilyMemberForm'
 import DocumentPreviewModal from '../components/document/DocumentPreviewModal'
@@ -34,6 +36,11 @@ const GENDERS = ['Male', 'Female', 'Other']
 export default function ClientDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const canEditClient = can(user, 'editClient')
+  const canEditFamily = can(user, 'editFamilyMember')
+  const canAddFamily = can(user, 'addFamilyMember')
+  const canDeleteFamily = can(user, 'deleteFamilyMember')
   const [client, setClient] = useState(null)
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState(0)
@@ -154,7 +161,9 @@ export default function ClientDetailPage() {
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, alignItems: 'center' }}>
                 <Typography variant="h6">Personal Information</Typography>
                 {!editing ? (
-                  <Button variant="outlined" startIcon={<MdEdit />} onClick={() => setEditing(true)} size="small">Edit</Button>
+                  canEditClient ? (
+                    <Button variant="outlined" startIcon={<MdEdit />} onClick={() => setEditing(true)} size="small">Edit</Button>
+                  ) : null
                 ) : (
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     <Button onClick={() => { setEditing(false); setForm(client) }} size="small">Cancel</Button>
@@ -225,7 +234,9 @@ export default function ClientDetailPage() {
               <Typography variant="h6">Family Members</Typography>
               <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>Linked relatives and dependents.</Typography>
             </Box>
-            <Button variant="contained" startIcon={<MdAdd />} onClick={() => { setEditMember(null); setFamilyFormOpen(true) }}>Add Member</Button>
+            {canAddFamily && (
+              <Button variant="contained" startIcon={<MdAdd />} onClick={() => { setEditMember(null); setFamilyFormOpen(true) }}>Add Member</Button>
+            )}
           </Box>
           {members.length === 0 ? (
             <Card sx={{ textAlign: 'center', py: 8, background: 'var(--surface-2)', border: '1px dashed var(--border-strong)' }}>

@@ -18,9 +18,13 @@ function ProtectedRoute({ children }) {
 }
 
 function PublicOnlyRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated, user, loading } = useAuth()
   if (loading) return null
-  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children
+  if (isAuthenticated) {
+    const dest = user?.role === 'CLIENT' ? '/portal' : '/dashboard'
+    return <Navigate to={dest} replace />
+  }
+  return children
 }
 
 export default function App() {

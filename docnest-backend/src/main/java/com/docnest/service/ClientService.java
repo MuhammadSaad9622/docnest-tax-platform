@@ -30,8 +30,11 @@ public class ClientService {
     private final DocumentRepository documentRepository;
     private final ActivityService activityService;
 
-    private static final List<String> REQUIRED_DOC_TYPES =
-            Arrays.asList("AADHAR", "PAN", "DRIVING_LICENSE", "ELECTRICITY_BILL");
+private static final List<String> REQUIRED_DOC_TYPES =
+        Arrays.asList(
+                "AADHAR", "PAN", "DRIVING_LICENSE", "ELECTRICITY_BILL",
+                "W2", "FORM_1099NEC", "FORM_1099_MISC", "SSN_CARD", "US_PASSPORT"
+        );
 
     private void validateDob(LocalDate dob) {
         if (dob == null) return;
@@ -105,18 +108,34 @@ public class ClientService {
         return toDTO(client);
     }
 
-    public Page<ClientDTO> searchClients(String query, Long locationId, int page, int size) {
+    public Page<ClientDTO> searchClients(String query, Long locationId, List<Long> officeIds, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Client> clients = clientRepository.searchClients(
                 (query == null || query.isBlank()) ? null : query,
                 locationId,
+                officeIds,
                 pageable);
         return clients.map(this::toDTO);
     }
 
+    /**
+     * Office-based scoping:
+     *  - officeIds == null or empty → unrestricted (ADMIN / unscoped user)
+     *  - officeIds has entries → user only sees clients in those offices
+     */
+    public Page<ClientDTO> searchClientsForUser(String query, Long locationId, List<Long> officeIds, int page, int size) {
+        return searchClients(query, locationId, officeIds, page, size);
+    }
+
     public List<ClientDTO> getRecentClients() {
-        return clientRepository.findTop5ByOrderByCreatedAtDesc()
-                .stream().map(this::toDTO).collect(Collectors.toList());
+        return getRecentClients(null);
+    }
+
+    public List<ClientDTO> getRecentClients(List<Long> officeIds) {
+        List<Client> clients = (officeIds == null || officeIds.isEmpty())
+                ? clientRepository.findTop5ByOrderByCreatedAtDesc()
+                : clientRepository.findTop5ByLocationIdInOrderByCreatedAtDesc(officeIds);
+        return clients.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     public ClientDTO toDTO(Client client) {
@@ -141,6 +160,7 @@ public class ClientService {
                 .createdAt(client.getCreatedAt())
                 .familyMemberCount(familyCount)
                 .documentCount(docCount)
+                .totalDocTypes(REQUIRED_DOC_TYPES.size())
                 .hasMissingDocuments(hasMissing)
                 .build();
     }

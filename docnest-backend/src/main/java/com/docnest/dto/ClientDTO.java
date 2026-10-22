@@ -46,5 +46,6 @@ public class ClientDTO {
     // Computed / summary fields
     private long familyMemberCount;
     private long documentCount;
+    private int totalDocTypes;
     private boolean hasMissingDocuments;
 }

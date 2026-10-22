@@ -10,11 +10,19 @@ import Chip from '@mui/material/Chip'
 import { MdExpandMore, MdExpandLess, MdEdit, MdDelete, MdFolder } from 'react-icons/md'
 import { avatarColor, formatDate, docTypeLabel } from '../../utils/formatters'
 import { documentService } from '../../services/documentService'
+import { useAuth } from '../../context/AuthContext'
+import { can } from '../../utils/permissions'
 import DocumentCard from '../document/DocumentCard'
 
-const DOC_TYPES = ['AADHAR', 'PAN', 'DRIVING_LICENSE', 'ELECTRICITY_BILL']
+const DOC_TYPES = [
+  'AADHAR', 'PAN', 'DRIVING_LICENSE', 'ELECTRICITY_BILL',
+  'W2', 'FORM_1099NEC', 'FORM_1099_MISC', 'SSN_CARD', 'US_PASSPORT',
+]
 
 export default function FamilyMemberCard({ member, onEdit, onDelete, onPreview }) {
+  const { user } = useAuth()
+  const canEdit = can(user, 'editFamilyMember')
+  const canDelete = can(user, 'deleteFamilyMember')
   const [expanded, setExpanded] = useState(false)
   const [docs, setDocs] = useState([])
   const [completion, setCompletion] = useState({ uploaded: 0, total: 4, percentage: 0 })
@@ -83,8 +91,8 @@ export default function FamilyMemberCard({ member, onEdit, onDelete, onPreview }
             </Box>
           </Tooltip>
           <Box sx={{ display: 'flex', gap: 0.25 }}>
-            <Tooltip title="Edit"><IconButton size="small" onClick={(e) => { e.stopPropagation(); onEdit?.(member) }} sx={{ color: 'var(--primary)' }}><MdEdit size={15} /></IconButton></Tooltip>
-            <Tooltip title="Remove"><IconButton size="small" onClick={(e) => { e.stopPropagation(); onDelete?.(member.id) }} sx={{ color: 'var(--danger)' }}><MdDelete size={15} /></IconButton></Tooltip>
+            {canEdit && <Tooltip title="Edit"><IconButton size="small" onClick={(e) => { e.stopPropagation(); onEdit?.(member) }} sx={{ color: 'var(--primary)' }}><MdEdit size={15} /></IconButton></Tooltip>}
+            {canDelete && <Tooltip title="Remove"><IconButton size="small" onClick={(e) => { e.stopPropagation(); onDelete?.(member.id) }} sx={{ color: 'var(--danger)' }}><MdDelete size={15} /></IconButton></Tooltip>}
           </Box>
           {expanded ? <MdExpandLess size={20} color="var(--text-muted)" /> : <MdExpandMore size={20} color="var(--text-muted)" />}
         </Box>

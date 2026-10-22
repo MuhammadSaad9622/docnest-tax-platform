@@ -1,28 +1,61 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { MdDashboard, MdPeople, MdPersonAdd, MdAccountTree,
-         MdUpload, MdHistory, MdSettings, MdMenu, MdClose, MdLogout } from 'react-icons/md'
+         MdUpload, MdHistory, MdSettings, MdMenu, MdClose, MdLogout, MdGroup, MdFolder } from 'react-icons/md'
 import { useAuth } from '../../context/AuthContext'
+import { can } from '../../utils/permissions'
 import './Sidebar.css'
 
-const navSections = [
-  {
-    label: 'GENERAL',
-    items: [
-      { to: '/dashboard', icon: <MdDashboard />, label: 'Dashboard', end: true },
-      { to: '/clients', icon: <MdPeople />, label: 'Clients', end: true },
-      { to: '/clients/add', icon: <MdPersonAdd />, label: 'Add Client' },
-    ],
-  },
-  {
-    label: 'OPERATIONS',
-    items: [
-      { to: '/family/1', icon: <MdAccountTree />, label: 'Family Tree' },
-      { to: '/import', icon: <MdUpload />, label: 'Excel Import' },
-      { to: '/activity', icon: <MdHistory />, label: 'Activity Logs' },
-      { to: '/settings', icon: <MdSettings />, label: 'Settings' },
-    ],
-  },
-]
+const buildNavSections = (user) => {
+  const role = user?.role
+
+  // CLIENT role — completely different navigation
+  if (role === 'CLIENT') {
+    return [
+      {
+        label: 'MY PORTAL',
+        items: [
+          { to: '/portal', icon: <MdFolder />, label: 'My Documents', end: true },
+        ],
+      },
+    ]
+  }
+
+  // Staff roles
+  const sections = [
+    {
+      label: 'GENERAL',
+      items: [
+        { to: '/dashboard',    icon: <MdDashboard />,  label: 'Dashboard', end: true },
+        { to: '/clients',      icon: <MdPeople />,     label: 'Clients', end: true },
+      ],
+    },
+    {
+      label: 'OPERATIONS',
+      items: [
+        { to: '/clients/add',  icon: <MdPersonAdd />,  label: 'Add Client' },
+        { to: '/family/1',     icon: <MdAccountTree />, label: 'Family Tree' },
+      ],
+    },
+  ]
+
+  if (can(user, 'importExcel')) {
+    sections[1].items.push({ to: '/import',   icon: <MdUpload />, label: 'Excel Import' })
+  }
+
+  if (can(user, 'viewAllActivity')) {
+    sections[1].items.push({ to: '/activity', icon: <MdHistory />, label: 'Activity Logs' })
+  }
+
+  if (can(user, 'manageSettings')) {
+    sections[1].items.push({ to: '/settings', icon: <MdSettings />, label: 'Settings' })
+  }
+
+  if (can(user, 'manageUsers')) {
+    sections[1].items.push({ to: '/settings?tab=users', icon: <MdGroup />, label: 'User Management' })
+  }
+
+  return sections
+}
 
 export default function Sidebar({ mobileOpen, onToggle }) {
   const { user, logout } = useAuth()
@@ -32,6 +65,8 @@ export default function Sidebar({ mobileOpen, onToggle }) {
     logout()
     navigate('/')
   }
+
+  const navSections = buildNavSections(user)
 
   const initials = user?.fullName
     ? user.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)

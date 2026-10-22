@@ -12,11 +12,17 @@ import ConfirmModal from '../ui/ConfirmModal'
 import { getInitials, avatarColor } from '../../utils/formatters'
 import { toast } from 'react-toastify'
 import { clientService } from '../../services/clientService'
+import { useAuth } from '../../context/AuthContext'
+import { can } from '../../utils/permissions'
 
 export default function ClientCard({ client, onRefresh }) {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+  const canDelete = can(user, 'deleteClient')
+  const canEdit = can(user, 'editClient')
 
   const initials = getInitials(client.firstName, client.lastName)
   const color = avatarColor(`${client.firstName}${client.lastName}`)
@@ -37,7 +43,10 @@ export default function ClientCard({ client, onRefresh }) {
   }
 
   // Mini doc status dots
-  const docTypes = ['AADHAR', 'PAN', 'DRIVING_LICENSE', 'ELECTRICITY_BILL']
+  const docTypes = [
+    'AADHAR', 'PAN', 'DRIVING_LICENSE', 'ELECTRICITY_BILL',
+    'W2', 'FORM_1099NEC', 'FORM_1099_MISC', 'SSN_CARD', 'US_PASSPORT',
+  ]
 
   return (
     <>
@@ -52,16 +61,18 @@ export default function ClientCard({ client, onRefresh }) {
               {initials}
             </Avatar>
             <Box sx={{ display: 'flex', gap: 0.5 }}>
-              <Tooltip title="View Details">
+              <Tooltip title={canEdit ? 'Edit Details' : 'View Details'}>
                 <IconButton size="small" onClick={() => navigate(`/clients/${client.id}`)} sx={{ color: 'var(--primary)', '&:hover': { background: 'var(--primary-light)' } }}>
                   <MdEdit size={15} />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Delete">
-                <IconButton size="small" onClick={() => setConfirmOpen(true)} sx={{ color: 'var(--danger)', '&:hover': { background: '#FEF2F2' } }}>
-                  <MdDelete size={15} />
-                </IconButton>
-              </Tooltip>
+              {canDelete && (
+                <Tooltip title="Delete">
+                  <IconButton size="small" onClick={() => setConfirmOpen(true)} sx={{ color: 'var(--danger)', '&:hover': { background: '#FEF2F2' } }}>
+                    <MdDelete size={15} />
+                  </IconButton>
+                </Tooltip>
+              )}
             </Box>
           </Box>
 

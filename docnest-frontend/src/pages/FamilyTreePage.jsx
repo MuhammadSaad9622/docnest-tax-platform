@@ -14,10 +14,14 @@ import Spinner from '../components/ui/Spinner'
 import EmptyState from '../components/ui/EmptyState'
 import { familyService } from '../services/familyService'
 import { clientService } from '../services/clientService'
+import { useAuth } from '../context/AuthContext'
+import { can } from '../utils/permissions'
 
 export default function FamilyTreePage() {
   const { clientId } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const canAddFamily = can(user, 'addFamilyMember')
   const [treeData, setTreeData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [client, setClient] = useState(null)
@@ -59,7 +63,7 @@ export default function FamilyTreePage() {
             {client ? `${client.firstName} ${client.lastName}'s family hierarchy` : 'Visualize family relationships'}
           </Typography>
         </Box>
-        {selected && (
+        {selected && canAddFamily && (
           <Button variant="contained" startIcon={<MdAdd />} onClick={() => setFormOpen(true)}>Add Member</Button>
         )}
       </Box>
@@ -82,8 +86,8 @@ export default function FamilyTreePage() {
       ) : loading ? (
         <Spinner message="Loading family tree…" />
       ) : !treeData || (!treeData.children?.length) ? (
-        <EmptyState icon="🌳" title="No family members yet" description="Add family members to visualize the tree."
-          actionLabel="Add Member" onAction={() => setFormOpen(true)} />
+        <EmptyState icon="🌳" title="No family members yet" description={canAddFamily ? 'Add family members to visualize the tree.' : 'No family members linked to this client.'}
+          actionLabel={canAddFamily ? 'Add Member' : undefined} onAction={() => setFormOpen(true)} />
       ) : (
         <Card sx={{ 
           overflow: 'hidden',

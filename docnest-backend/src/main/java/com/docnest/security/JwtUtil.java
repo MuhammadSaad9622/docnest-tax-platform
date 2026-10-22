@@ -20,13 +20,34 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private long expiration;
 
-    public String generateToken(String email) {
-        return Jwts.builder()
+    public String generateToken(String email, Long officeId) {
+        var builder = Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(getSignKey(), SignatureAlgorithm.HS256)
-                .compact();
+                .setExpiration(new Date(System.currentTimeMillis() + expiration));
+        if (officeId != null) {
+            builder.claim("officeId", officeId);
+        }
+        return builder.signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
+    }
+
+    /** Backward-compat: generate token without office scoping */
+    public String generateToken(String email) {
+        return generateToken(email, null);
+    }
+
+    public Long extractOfficeId(String token) {
+        try {
+            var claims = Jwts.parserBuilder()
+                    .setSigningKey(getSignKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            Object officeId = claims.get("officeId");
+            return officeId != null ? Long.valueOf(officeId.toString()) : null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public String extractEmail(String token) {

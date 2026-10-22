@@ -12,7 +12,7 @@ import Divider from '@mui/material/Divider'
 import Grid from '@mui/material/Grid'
 import { useNavigate } from 'react-router-dom'
 import {
-  MdAdd, MdUpload, MdVisibility, MdEdit, MdDelete, MdAccountTree,
+  MdAdd, MdUpload, MdVisibility, MdDelete, MdAccountTree,
   MdFolder, MdPeople, MdFamilyRestroom, MdWarning, MdExpandMore,
   MdKeyboardArrowRight, MdPhone, MdLocationOn, MdAccessTime,
   MdTrendingUp, MdTrendingDown, MdDescription, MdErrorOutline,
@@ -20,6 +20,8 @@ import {
 import { dashboardService } from '../services/dashboardService'
 import { clientService } from '../services/clientService'
 import { toast } from 'react-toastify'
+import { useAuth } from '../context/AuthContext'
+import { can } from '../utils/permissions'
 import ConfirmModal from '../components/ui/ConfirmModal'
 import SkeletonCard from '../components/ui/SkeletonCard'
 import {
@@ -27,17 +29,25 @@ import {
   docTypeLabel, actionLabel, actionColor,
 } from '../utils/formatters'
 
-const DOC_COLORS = { AADHAR: '#4F46E5', PAN: '#10B981', DRIVING_LICENSE: '#F59E0B', ELECTRICITY_BILL: '#EF4444' }
+const DOC_COLORS = { AADHAR: '#4F46E5', PAN: '#10B981', DRIVING_LICENSE: '#F59E0B', ELECTRICITY_BILL: '#EF4444', W2: '#2563EB', FORM_1099NEC: '#7C3AED', FORM_1099_MISC: '#0891B2', SSN_CARD: '#DC2626', US_PASSPORT: '#059669' }
 const DOC_GRADIENTS = {
   AADHAR: 'linear-gradient(90deg, #2563EB, #60A5FA)',
   PAN: 'linear-gradient(90deg, #16A34A, #4ADE80)',
   DRIVING_LICENSE: 'linear-gradient(90deg, #D97706, #FCD34D)',
   ELECTRICITY_BILL: 'linear-gradient(90deg, #DC2626, #F87171)',
+  W2: 'linear-gradient(90deg, #2563EB, #93C5FD)',
+  FORM_1099NEC: 'linear-gradient(90deg, #7C3AED, #C4B5FD)',
+  FORM_1099_MISC: 'linear-gradient(90deg, #0891B2, #67E8F9)',
+  SSN_CARD: 'linear-gradient(90deg, #DC2626, #FCA5A5)',
+  US_PASSPORT: 'linear-gradient(90deg, #059669, #6EE7B7)',
 }
 const INITIAL_SHOW = 7
 
 export default function DashboardPage() {
   const nav = useNavigate()
+  const { user } = useAuth()
+  const canDelete = can(user, 'deleteClient')
+  const canImport = can(user, 'importExcel')
   const [stats, setStats] = useState(null)
   const [clients, setClients] = useState([])
   const [loading, setLoading] = useState(true)
@@ -88,7 +98,8 @@ export default function DashboardPage() {
   const ClientRow = ({ client, isLast }) => {
     const full = getFullName(client)
     const color = avatarColor(full)
-    const pct = client.hasMissingDocuments ? Math.round(((client.documentCount || 0) / 4) * 100) : 100
+    const total = client.totalDocTypes || 4
+    const pct = client.hasMissingDocuments ? Math.round(((client.documentCount || 0) / total) * 100) : 100
     return (
       <Box sx={{
         display: 'flex', alignItems: 'center', gap: 2, py: 1.5, px: 2.5,
@@ -114,7 +125,7 @@ export default function DashboardPage() {
         <Box sx={{ width: 110, display: { xs: 'none', md: 'block' } }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.3 }}>
             <Typography variant="caption" sx={{ fontSize: '0.6rem', fontWeight: 600, color: pct === 100 ? '#059669' : '#D97706' }}>{pct}%</Typography>
-            <Chip label={`${client.documentCount || 0}/4`} size="small" sx={{ height: 16, fontSize: '0.5rem', fontWeight: 700, background: pct === 100 ? '#ECFDF5' : '#FFF7ED', color: pct === 100 ? '#059669' : '#D97706' }} />
+            <Chip label={`${client.documentCount || 0}/${total}`} size="small" sx={{ height: 16, fontSize: '0.5rem', fontWeight: 700, background: pct === 100 ? '#ECFDF5' : '#FFF7ED', color: pct === 100 ? '#059669' : '#D97706' }} />
           </Box>
           <LinearProgress variant="determinate" value={pct} sx={{
             height: 5, borderRadius: 3, bgcolor: '#F1F5F9',
@@ -143,8 +154,7 @@ export default function DashboardPage() {
           <Tooltip title="View"><IconButton size="small" onClick={() => nav(`/clients/${client.id}`)} sx={{ color: '#2563EB', '&:hover': { background: '#EFF6FF' } }}><MdVisibility size={15} /></IconButton></Tooltip>
           <Tooltip title="Documents"><IconButton size="small" onClick={() => nav(`/clients/${client.id}/documents`)} sx={{ color: '#10B981', '&:hover': { background: '#ECFDF5' } }}><MdFolder size={15} /></IconButton></Tooltip>
           <Tooltip title="Family Tree"><IconButton size="small" onClick={() => nav(`/family/${client.id}`)} sx={{ color: '#8B5CF6', '&:hover': { background: '#F5F3FF' } }}><MdAccountTree size={15} /></IconButton></Tooltip>
-          <Tooltip title="Edit"><IconButton size="small" onClick={() => nav(`/clients/${client.id}`)} sx={{ color: 'var(--text-muted)', '&:hover': { background: 'var(--surface-3)' } }}><MdEdit size={14} /></IconButton></Tooltip>
-          <Tooltip title="Delete"><IconButton size="small" onClick={() => setDeleteId(client.id)} sx={{ color: '#EF4444', '&:hover': { background: '#FEF2F2' } }}><MdDelete size={14} /></IconButton></Tooltip>
+          {canDelete && <Tooltip title="Delete"><IconButton size="small" onClick={() => setDeleteId(client.id)} sx={{ color: '#EF4444', '&:hover': { background: '#FEF2F2' } }}><MdDelete size={14} /></IconButton></Tooltip>}
         </Box>
       </Box>
     )
@@ -165,8 +175,10 @@ export default function DashboardPage() {
           <Typography variant="body2" sx={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Manage clients, documents, and family records.</Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1.5 }}>
-          <Button variant="outlined" startIcon={<MdUpload size={16} />} onClick={() => nav('/import')} size="small"
-            sx={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', '&:hover': { borderColor: '#2563EB', color: '#2563EB' } }}>Import</Button>
+          {canImport && (
+            <Button variant="outlined" startIcon={<MdUpload size={16} />} onClick={() => nav('/import')} size="small"
+              sx={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', '&:hover': { borderColor: '#2563EB', color: '#2563EB' } }}>Import</Button>
+          )}
           <Button variant="contained" startIcon={<MdAdd size={16} />} onClick={() => nav('/clients/add')} size="small"
             sx={{ background: '#2563EB', '&:hover': { background: '#1D4ED8' }, boxShadow: '0 4px 12px rgba(37,99,235,0.25)' }}>New Client</Button>
         </Box>

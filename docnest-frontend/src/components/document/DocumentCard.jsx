@@ -14,12 +14,21 @@ import { docTypeLabel, formatDate } from '../../utils/formatters'
 import { MAX_FILE_SIZE_MB, isAllowedFileType, isFileSizeOk, validateFile } from '../../utils/validators'
 import { extractTextFromFile } from '../../utils/ocrService'
 import { validateDocument } from '../../utils/documentValidators'
+import { useAuth } from '../../context/AuthContext'
+import { can } from '../../utils/permissions'
+import { portalService } from '../../services/portalService'
 
 const DOC_ICONS = {
   AADHAR:           { icon: '🪪', color: '#4F46E5' },
   PAN:              { icon: '🏦', color: '#10B981' },
   DRIVING_LICENSE:  { icon: '🚗', color: '#F59E0B' },
   ELECTRICITY_BILL: { icon: '⚡', color: '#EF4444' },
+  W2:               { icon: '📋', color: '#2563EB' },
+  W2_FORM:          { icon: '📋', color: '#2563EB' },
+  FORM_1099NEC:     { icon: '📄', color: '#7C3AED' },
+  FORM_1099_MISC:   { icon: '📄', color: '#0891B2' },
+  SSN_CARD:         { icon: '🔢', color: '#DC2626' },
+  US_PASSPORT:      { icon: '🛂', color: '#059669' },
 }
 
 // OCR step pipeline
@@ -30,7 +39,10 @@ const OCR_STEPS = [
   { id: 'upload',   label: 'Uploading to server',          icon: '☁️' },
 ]
 
-export default function DocumentCard({ ownerType, ownerId, docType, document: doc, onRefresh, onPreview, compact }) {
+export default function DocumentCard({ ownerType, ownerId, docType, document: doc, onRefresh, onPreview, compact, isClientPortal }) {
+  const { user } = useAuth()
+  const canReplace = isClientPortal || can(user, 'replaceDocument')
+  const canDeleteDoc = isClientPortal || can(user, 'deleteDocument')
   const [uploading, setUploading] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
@@ -101,7 +113,14 @@ export default function DocumentCard({ ownerType, ownerId, docType, document: do
     // ── Step 4: Upload to backend ──
     setOcrStep('upload')
     try {
-      if (doc) {
+      if (isClientPortal) {
+        if (doc) {
+          toast.info('Replace existing document from your portal coming soon')
+        } else {
+          await portalService.upload(docType, file, rawText, validation.confidence)
+          toast.success(`${docTypeLabel(docType)} uploaded & verified ✅`)
+        }
+      } else if (doc) {
         await documentService.replace(doc.id, file)
         toast.success(`${docTypeLabel(docType)} replaced & verified ✅`)
       } else {
@@ -117,13 +136,17 @@ export default function DocumentCard({ ownerType, ownerId, docType, document: do
     } finally {
       setUploading(false)
     }
-  }, [doc, ownerType, ownerId, docType, onRefresh])
+  }, [doc, ownerType, ownerId, docType, onRefresh, isClientPortal])
 
   const handleDelete = async () => {
     if (!doc) return
     setDeleting(true)
     try {
-      await documentService.delete(doc.id)
+      if (isClientPortal) {
+        await portalService.delete(doc.id)
+      } else {
+        await documentService.delete(doc.id)
+      }
       toast.success(`${docTypeLabel(docType)} deleted`)
       resetOcr()
       onRefresh?.()
@@ -198,7 +221,7 @@ export default function DocumentCard({ ownerType, ownerId, docType, document: do
       )}
 
       {/* ── Drop zone (when no processing active) ── */}
-      {!isProcessing && ocrStep !== 'success' && (
+      {(isClientPortal || can(user, 'uploadDocument')) && !isProcessing && ocrStep !== 'success' && (
         <Box {...getRootProps()} sx={{
           cursor: 'pointer', textAlign: 'center', py: compact ? 1.5 : 2,
           borderRadius: 'var(--radius-sm)', transition: 'all 0.2s',
@@ -315,15 +338,19 @@ export default function DocumentCard({ ownerType, ownerId, docType, document: do
             <Tooltip title="Preview">
               <IconButton size="small" onClick={() => onPreview?.(doc)} sx={{ color: 'var(--primary)' }}><MdVisibility size={16} /></IconButton>
             </Tooltip>
-            <Tooltip title="Replace">
-              <IconButton size="small" component="label" sx={{ color: 'var(--accent)' }} disabled={isProcessing}>
-                <MdAutorenew size={16} />
-                <input type="file" hidden accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => e.target.files[0] && handleUpload(e.target.files[0])} />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Delete">
-              <IconButton size="small" onClick={handleDelete} disabled={deleting} sx={{ color: 'var(--danger)' }}><MdDelete size={16} /></IconButton>
-            </Tooltip>
+            {canReplace && (
+              <Tooltip title="Replace">
+                <IconButton size="small" component="label" sx={{ color: 'var(--accent)' }} disabled={isProcessing}>
+                  <MdAutorenew size={16} />
+                  <input type="file" hidden accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => e.target.files[0] && handleUpload(e.target.files[0])} />
+                </IconButton>
+              </Tooltip>
+            )}
+            {canDeleteDoc && (
+              <Tooltip title="Delete">
+                <IconButton size="small" onClick={handleDelete} disabled={deleting} sx={{ color: 'var(--danger)' }}><MdDelete size={16} /></IconButton>
+              </Tooltip>
+            )}
           </>
         )}
       </Box>

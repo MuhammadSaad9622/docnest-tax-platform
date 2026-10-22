@@ -28,7 +28,10 @@ public class DocumentService {
     private final ActivityService activityService;
 
     private static final List<String> REQUIRED_DOC_TYPES =
-            Arrays.asList("AADHAR", "PAN", "DRIVING_LICENSE", "ELECTRICITY_BILL");
+            Arrays.asList(
+                    "AADHAR", "PAN", "DRIVING_LICENSE", "ELECTRICITY_BILL",
+                    "W2", "FORM_1099NEC", "FORM_1099_MISC", "SSN_CARD", "US_PASSPORT"
+            );
 
     @Transactional
     public DocumentDTO uploadDocument(String ownerType, Long ownerId, String documentType, MultipartFile file, String ocrText, Integer confidence) {

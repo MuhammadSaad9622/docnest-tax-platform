@@ -31,7 +31,24 @@ export function AuthProvider({ children }) {
       const response = await authService.login({ email, password });
       localStorage.setItem('docnest_token', response.token);
       setToken(response.token);
-      setUser({ email: response.email, fullName: response.fullName, role: response.role });
+      const role = response.role || 'EMPLOYEE';
+      const baseUser = {
+        email: response.email,
+        fullName: response.fullName,
+        role,
+        assignedOffice: response.assignedOffice ?? null,
+      };
+      // For CLIENT role, fetch full user data (including linkedClient)
+      if (role === 'CLIENT') {
+        try {
+          const me = await authService.getMe(response.token);
+          setUser({ ...baseUser, id: me.id, linkedClient: me.linkedClient });
+        } catch {
+          setUser(baseUser);
+        }
+      } else {
+        setUser(baseUser);
+      }
       return response;
     } catch (err) {
       // The centralized API interceptor already provides user-friendly messages
@@ -50,7 +67,24 @@ export function AuthProvider({ children }) {
       const response = await authService.register(data);
       localStorage.setItem('docnest_token', response.token);
       setToken(response.token);
-      setUser({ email: response.email, fullName: response.fullName, role: response.role });
+      const role = response.role || 'EMPLOYEE';
+      const baseUser = {
+        email: response.email,
+        fullName: response.fullName,
+        role,
+        assignedOffice: response.assignedOffice ?? null,
+      };
+      // CLIENT role — fetch full user data including linkedClient
+      if (role === 'CLIENT') {
+        try {
+          const me = await authService.getMe(response.token);
+          setUser({ ...baseUser, id: me.id, linkedClient: me.linkedClient });
+        } catch {
+          setUser(baseUser);
+        }
+      } else {
+        setUser(baseUser);
+      }
       return response;
     } catch (err) {
       const message = err.response?.data?.message
